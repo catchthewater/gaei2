@@ -77,6 +77,7 @@ public class sensor : MonoBehaviour
                 // Debug.Log(hit_int_z);
                 seen[hit_int_x,hit_int_y,hit_int_z]=1;
                 wall[hit_int_x,0,hit_int_z]=1;      //wallを1にする
+                wall[hit_int_x + 1, 0, hit_int_z+1] = 1;
                 // Debug.Log(hit_int_x+","+hit_int_z);
             }
         }
@@ -85,6 +86,13 @@ public class sensor : MonoBehaviour
 
         float dx = (float)potential(now.x-0.5f,now.z) - (float)potential(now.x+0.5f,now.z);     //偏微分:-0.5から先にやっているのは大きい山から小さい山にベクトルを向けさせたいため
         float dz = (float)potential(now.x,now.z-0.5f) - (float)potential(now.x,now.z+0.5f);
+
+        int now_x = (int)dx;
+        int now_y = (int)dy;
+        if (now_x == 0 && now_y == 0)
+        {
+            //astarおいてみる
+        }
 
         // Debug.Log(dx);
         // Debug.Log(dz);
