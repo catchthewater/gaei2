@@ -2,19 +2,22 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 using System.Linq;
+using System;
+//using System.Drawing;
+//using System.Diagnostics;
 
 public class AStaralgo : MonoBehaviour
 {
     public const int field_size = 40;
     public GameObject obj;
     //public const GameObject goal;
-    public Vector3 sp = new Vector3(0, 0, 0);//start.transform.position;
+    public  Vector3 sp = new Vector3(0, 0, 0);//start.transform.position;
 
-    public Vector3 gp = new Vector3(10, 0, 10);//goal.transform.position;
+    public  Vector3 gp = new Vector3(10, 0, 10);//goal.transform.position;
 
     public int[,,] wall = new int[field_size + 1, field_size + 1, field_size + 1];
 
-    private void init()     //”z—ñ‚Ì‰Šú‰»(“¹‹óŠÔ‚È‚Ì‚Å‚Ç‚±‚É•Ç‚âáŠQ•¨‚ª‚ ‚é‚©‚Í‚í‚©‚ç‚È‚¢‚Ì‚Åwall‚Í‚·‚×‚Ä0‚É‚·‚é)
+    private void init()     //é…åˆ—ã®åˆæœŸåŒ–(é“ç©ºé–“ãªã®ã§ã©ã“ã«å£ã‚„éšœå®³ç‰©ãŒã‚ã‚‹ã‹ã¯ã‚ã‹ã‚‰ãªã„ã®ã§wallã¯ã™ã¹ã¦0ã«ã™ã‚‹)
     {
         for (int i = 0; i <= field_size; i++)
         {
@@ -28,31 +31,35 @@ public class AStaralgo : MonoBehaviour
         }
     }
 
-    private void radar()
+    //radarã®å•é¡Œç‚¹è¦‹ã‹ã‘ä¸Šå¹…2ã®çµŒè·¯4ã‹ã‚‰6.5->6ãªã‚‰ok4ã‹ã‚‰6.4->5ã¯ã ã‚
+    //6.4ã¯å£ã®éš›ãŒ5.9->5ã¨ã—ã¦è¨ˆç®—ã•ã‚Œã‚‹ã€‚
+    //4.5->4ã‹ã‚‰6.5->6ã‚‚ã ã‚ï¼Ÿï¼Ÿ
+    private void radar(Vector3 origin)
     {
-        Vector3 origin = transform.position;
 
-        for (int i = 0; i < 360; i++)    //360“x‰ñ“]‚µAü‚è‚ÌÕ•Á•¨‚ğ‹L˜^
+        for (int i = 0; i < 360; i++)    //360åº¦å›è»¢ã—ã€å‘¨ã‚Šã®é®è”½ç‰©ã‚’è¨˜éŒ²
         {
-            transform.Rotate(0, 1, 0);    //1“x‚¸‚Â‰ñ“]
+            transform.Rotate(0, 1, 0);    //1åº¦ãšã¤å›è»¢
             Vector3 direction = transform.forward;
-            Ray ray = new Ray(origin, direction);   //RayŒ^:Œõü‚ğ¦‚·Borigin:Œ»İˆÊ’uAdirection:Œõü‚ğo‚·•ûŒü
+            Ray ray = new Ray(origin, direction);   //Rayå‹:å…‰ç·šã‚’ç¤ºã™ã€‚origin:ç¾åœ¨ä½ç½®ã€direction:å…‰ç·šã‚’å‡ºã™æ–¹å‘
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))   //áŠQ•¨‚ª“–‚½‚Á‚½‚çhit‚Éî•ñ‚ªŠi”[‚³‚êARaycastŠÖ”‚Í1‚ğ•Ô‚·
+            
+            if (Physics.Raycast(ray, out hit))   //éšœå®³ç‰©ãŒå½“ãŸã£ãŸã‚‰hitã«æƒ…å ±ãŒæ ¼ç´ã•ã‚Œã€Raycasté–¢æ•°ã¯1ã‚’è¿”ã™
             {
                 //string name = hit.collider.gameObject.name;
                 // Debug.Log(name);
                 Vector3 hit_vec = hit.point;
-                int hit_int_x = (int)hit_vec.x;     //“–‚½‚Á‚½À•W‚ğintŒ^‚ÉƒLƒƒƒXƒg
+                int hit_int_x = (int)hit_vec.x;     //å½“ãŸã£ãŸåº§æ¨™ã‚’intå‹ã«ã‚­ãƒ£ã‚¹ãƒˆ
                 int hit_int_y = (int)hit_vec.y;
                 int hit_int_z = (int)hit_vec.z;
                 // Debug.Log(hit_int_z);
-                wall[hit_int_x, 0, hit_int_z] = 1;      //wall‚ğ1‚É‚·‚é
+                wall[hit_int_x, 0, hit_int_z] = 1;      //wallã‚’1ã«ã™ã‚‹
                 // Debug.Log(hit_int_x+","+hit_int_z);
+                //Debug.DrawRay(origin, direction, Color.red, Vector3.Distance(origin, hit_vec)); //ãƒ¬ãƒ¼ã‚¶ãƒ¼ã‚’å¯è¦–åŒ–
             }
         }
     }
-    //ƒ[ƒ‹ƒh“à‚Ì—×Ú‚·‚é”ªƒ}ƒX‚ğŠi”[
+    //ãƒ¯ãƒ¼ãƒ«ãƒ‰å†…ã®éš£æ¥ã™ã‚‹å…«ãƒã‚¹ã‚’æ ¼ç´
     public List<Vector3> GetAdjacences(Vector3 v)
     {
         var adjacences = new List<Vector3>();
@@ -61,6 +68,7 @@ public class AStaralgo : MonoBehaviour
             for (int dz = -1; dz <= 1; dz++)
             {
                 if (dx == 0 && dz == 0) continue;
+                //if (dx*dz == -1 || dx*dz == 1 || (dx == 0 && dz == 0)) continue;
                 Vector3 cell = new Vector3(v.x + dx, v.y, v.z + dz);
                 if (cell.x < 0 || cell.x > field_size || cell.z < 0 || cell.z > field_size) continue;
                 adjacences.Add(cell);
@@ -89,23 +97,23 @@ public class AStaralgo : MonoBehaviour
 
         while (true)
         {
-            // recentTargets‚Ì‚¤‚¿weight‚ªÅ‚à’á‚¢‚à‚Ì‚ğŒvZ‘ÎÛ‚Æ‚·‚é
+            // recentTargetsã®ã†ã¡weightãŒæœ€ã‚‚ä½ã„ã‚‚ã®ã‚’è¨ˆç®—å¯¾è±¡ã¨ã™ã‚‹
             AStarInfo currentTarget = recentTargets
                 .OrderBy(info => info.Weight)
                 .FirstOrDefault();
 
-            //radar();
+            radar(currentTarget.cell);
             //transform.position = currentTarget.cell;
 
-            // ƒ^[ƒQƒbƒg‚Ì—×ÚƒZƒ‹‚Ìî•ñ‚ğæ“¾‚·‚é
+            // ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®éš£æ¥ã‚»ãƒ«ã®æƒ…å ±ã‚’å–å¾—ã™ã‚‹
             List<AStarInfo> adjacentInfos = GetAdjacences(currentTarget.cell)
                 .Where(cell => {
-                    // ƒ^ƒCƒv‚ª“¹‚Å‚à‚È‚­ƒS[ƒ‹‚ÌƒZƒ‹‚Å‚à‚È‚¢ê‡‚Í‘ÎÛŠO
+                    // ã‚¿ã‚¤ãƒ—ãŒé“ã§ã‚‚ãªãã‚´ãƒ¼ãƒ«ã®ã‚»ãƒ«ã§ã‚‚ãªã„å ´åˆã¯å¯¾è±¡å¤–
                     if (wall[(int)cell.x, (int)cell.y, (int)cell.z] == 1 && cell != GoalVec)
                     {
                         return false;
                     }
-                    // ŒvZÏ‚İ‚ÌƒZƒ‹‚Í‘ÎÛŠO
+                    // è¨ˆç®—æ¸ˆã¿ã®ã‚»ãƒ«ã¯å¯¾è±¡å¤–
                     if (passedCells.Contains(cell))
                     {
                         return false;
@@ -115,31 +123,35 @@ public class AStaralgo : MonoBehaviour
                 .Select(cell => GetAStarInfo(cell, GoalVec, currentTarget))
                 .ToList();
 
-            // recentTargets‚ÆpassedCells‚ğXV
+            // recentTargetsã¨passedCellsã‚’æ›´æ–°
             recentTargets.Remove(currentTarget);
             recentTargets.AddRange(adjacentInfos);
             passedCells.Add(currentTarget.cell);
 
-            // ƒS[ƒ‹‚ªŠÜ‚Ü‚ê‚Ä‚¢‚½‚ç‚»‚±‚ÅI—¹
+            // ã‚´ãƒ¼ãƒ«ãŒå«ã¾ã‚Œã¦ã„ãŸã‚‰ãã“ã§çµ‚äº†
             goalInfo = adjacentInfos.FirstOrDefault(info => info.cell == GoalVec);
             if (goalInfo != null)
             {
                 break;
             }
-            // recentTargets‚ªƒ[ƒ‚¾‚Á‚½‚çs‚«~‚Ü‚è‚È‚Ì‚ÅI—¹
+            // recentTargetsãŒã‚¼ãƒ­ã ã£ãŸã‚‰è¡Œãæ­¢ã¾ã‚Šãªã®ã§çµ‚äº†
             if (recentTargets.Count == 0)
             {
+                
                 break;
             }
         }
 
-        // ƒS[ƒ‹‚ªŒ‹‰Ê‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚È‚¢ê‡‚ÍÅ’ZŒo˜H‚ªŒ©‚Â‚©‚ç‚È‚©‚Á‚½
+        // ã‚´ãƒ¼ãƒ«ãŒçµæœã«å«ã¾ã‚Œã¦ã„ãªã„å ´åˆã¯æœ€çŸ­çµŒè·¯ãŒè¦‹ã¤ã‹ã‚‰ãªã‹ã£ãŸ
         if (goalInfo == null)
         {
+            Debug.Log("Not Find Goal");
             return res;
         }
 
-        // Previous‚ğ’H‚Á‚ÄƒZƒ‹‚ÌƒŠƒXƒg‚ğì¬‚·‚é
+        Debug.Log("Find Goal");
+
+        // Previousã‚’è¾¿ã£ã¦ã‚»ãƒ«ã®ãƒªã‚¹ãƒˆã‚’ä½œæˆã™ã‚‹
         res.Add(goalInfo.cell);
         AStarInfo current = goalInfo;
         while (true)
@@ -172,9 +184,21 @@ public class AStaralgo : MonoBehaviour
     void Start()
     {
         init();
-        _shortestWay = GetShortestWay(sp, gp);
+        //Debug.Log((int)(6.4));
+        //Debug.Log((int)(6.5));
+        //åˆ‡ã‚Šæ¨ã¦intã®ã‚­ãƒ£ã‚¹ãƒˆ
+        _shortestWay = GetShortestWay(gp, sp);
 
         StartCoroutine(DelayCoroutine());
+
+        /*for (int i = 0; i < 11; i++)
+        {
+            for (int j = 0; j < 11; j++)
+            {
+                Console.Write(wall[i, 0, j]);
+            }
+            Console.WriteLine();
+        }*/
 
     }
     private IEnumerator DelayCoroutine()
@@ -190,7 +214,7 @@ public class AStaralgo : MonoBehaviour
     }
     void Update()
     {
-
+        
     }
 
 }
