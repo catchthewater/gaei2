@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 using System.Linq;
+using System;
+
 
 
 //using System.Drawing;
@@ -47,21 +49,21 @@ public class AStaralgorithm : MonoBehaviour
                 
                 Vector3 hit_vec = hit.point;
 
-                int hit_int_x = (int)hit_vec.x;     //当たった座標をint型にキャスト
-                int hit_int_y = (int)hit_vec.y;
-                int hit_int_z = (int)hit_vec.z;
+                double hit_int_x = Math.Round(hit_vec.x);     //当たった座標をint型にキャスト
+                double hit_int_y = Math.Round(hit_vec.y);
+                double hit_int_z = Math.Round(hit_vec.z);
 //----------------------変更箇所------------------------------
                 if (hit_vec == gp)
                 {
                     Debug.Log("Find Goal");
                     return;
                 }
-                if (wall[hit_int_x, 0, hit_int_z] == 0)
+                if (wall[(int)hit_int_x, (int)hit_int_y, (int)hit_int_z] == 0)
                 {
-                    wall[hit_int_x, 0, hit_int_z] = 1;      
+                    wall[(int)hit_int_x, (int)hit_int_y, (int)hit_int_z] = 1;      
                 }
 
-                Debug.DrawRay(origin, direction, Color.red, Vector3.Distance(origin, hit_vec)); //レーザーを可視化
+                //Debug.DrawRay(origin, direction, Color.red, Vector3.Distance(origin, hit_vec)); //レーザーを可視化
   //----------------------変更箇所------------------------------
             }
         }
@@ -110,8 +112,8 @@ public class AStaralgorithm : MonoBehaviour
     //この関数は使わないで、while文をUpdateのなかで書き直している。
     //これにより、レーダーと移動物体の逐次探索が可視化できるようになっている
     //探索終了をまたずにSceneが見れる。
-
-    /*public List<Vector3> GetShortestWay(Vector3 StartVec, Vector3 GoalVec)
+    /*
+    public List<Vector3> GetShortestWay(Vector3 StartVec, Vector3 GoalVec)
     {
         List<Vector3> res = new List<Vector3>();
         List<Vector3> passedCells = new List<Vector3>();
@@ -195,45 +197,7 @@ public class AStaralgorithm : MonoBehaviour
     }
     */
 
-
-
-
-    private AStarInfo GetAStarInfo(Vector3 targetVec, Vector3 goalVec, AStarInfo previousInfo)
-    {
-        AStarInfo result = new AStarInfo();
-        result.cell = targetVec;
-        result.previous = previousInfo;
-        result.step = (previousInfo == null) ? 0 : (previousInfo.step + 1); //一応かっこでくくる
-        result.distance = Vector3.Distance(targetVec, goalVec);
-        return result;
-    }
-
-//----------------------変更箇所------------------------------
-    List<Vector3> _shortestWay;
-    List<Vector3> res = new List<Vector3>();
-    List<Vector3> passedCells = new List<Vector3>();
-    List<AStarInfo> recentTargets = new List<AStarInfo>();
-    AStarInfo goalInfo = null;
-    void Start()
-    {
-        init();
-
-        passedCells.Add(sp);
-        recentTargets.Add(GetAStarInfo(sp, gp, null)); //GetShortestwayの最初の部分
-
-    }
-    /*private IEnumerator DelayCoroutine()
-    {
-
-        foreach (var Item in _shortestWay)
-        {
-            yield return new WaitForSeconds(1);
-            Debug.Log(Item);
-            obj.transform.position = Item;
-        }
-
-    }*/
-    void Update()
+    public List<Vector3> RouteFind()
     {
         //getshortestwaのwhereの部分
         if (goalInfo == null)
@@ -245,7 +209,7 @@ public class AStaralgorithm : MonoBehaviour
                 .FirstOrDefault();
 
             radar(currentTarget.cell);  //残留レーダーじゃなくて探索済のますが色でぬれたらいいね
-            //Debug.Log(currentTarget.cell);
+            Debug.Log(currentTarget.cell);
             //Debug.Log(currentTarget.step);
             //obj.transform.position = currentTarget.cell;
 
@@ -291,15 +255,90 @@ public class AStaralgorithm : MonoBehaviour
                 Debug.Log("Find Goal");
 
                 Debug.Log("print passedCells");
-                Debug.Log(string.Join(",", passedCells));        
+                Debug.Log(string.Join(",", passedCells));
+
+                //経路復元
+                res.Add(goalInfo.cell);
+                AStarInfo current = goalInfo;
+                while (true)
+                {
+                    if (current.previous != null)
+                    {
+                        res.Add(current.previous.cell);
+                        current = current.previous;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                res.Reverse();
+                return res;
             }
             // recentTargetsがゼロだったら行き止まりなので終了
             if (recentTargets.Count == 0)
             {
                 Debug.Log("Not Find Goal");
-
+                return null;
             }
+            return null;
+        }
+        return null;
+    }
+
+
+
+
+    private AStarInfo GetAStarInfo(Vector3 targetVec, Vector3 goalVec, AStarInfo previousInfo)
+    {
+        AStarInfo result = new AStarInfo();
+        result.cell = targetVec;
+        result.previous = previousInfo;
+        result.step = (previousInfo == null) ? 0 : (previousInfo.step + 1); //一応かっこでくくる
+        result.distance = Vector3.Distance(targetVec, goalVec);
+        return result;
+    }
+    
+//----------------------変更箇所------------------------------
+    List<Vector3> _shortestWay = new List<Vector3>();
+    List<Vector3> res = new List<Vector3>();
+    List<Vector3> passedCells = new List<Vector3>();
+    List<AStarInfo> recentTargets = new List<AStarInfo>();
+    AStarInfo goalInfo = null;
+    int can = 0;
+    void Start()
+    {
+        init();
+
+        passedCells.Add(sp);
+        recentTargets.Add(GetAStarInfo(sp, gp, null)); //GetShortestwayの最初の部分
+
+    }
+    void Update()
+    {
+        _shortestWay = RouteFind();
+        if(goalInfo != null && can == 0)
+        {
+            /*for (int i = 0; i < _shortestWay.Count() - 1; i++)
+            {
+                Debug.Log(_shortestWay[i]);
+                obj.transform.position = Vector3.Lerp(_shortestWay[i], _shortestWay[i + 1], 0.01f);
+
+            }*/
+            //StartCoroutine(DelayCoroutine());
+            can = 1;
         }
     }
+    /*private IEnumerator DelayCoroutine()
+    {
+
+        for (int i = 0; i < res.Count()-1; i++)
+        {
+            yield return new WaitForSeconds(1);
+            Debug.Log(res[i]);
+            obj.transform.position = Vector3.MoveTowards(res[i], res[i+1], 0.5f);
+        }
+
+    }*/
     //----------------------変更箇所------------------------------
 }
