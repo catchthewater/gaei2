@@ -4,14 +4,16 @@ using UnityEngine;
 using System.Linq;
 using System;
 
-
+//マップのサイズを与えて、大きな区画に切ってから探索するとデータ量が少なく滑らかな動きになるのでは？
+//利点としては壁を含むマスは、空白が大きくなるが、壁に近づきすぎないようになり、都合がよくなる
+//つまり今のところ1x1マスだが、何倍かしてイチマスを大きくすればいいのではないか？ということ
 
 //using System.Drawing;
 //using System.Diagnostics;
 
 public class AStaralgorithm : MonoBehaviour
 {
-    public const int field_size = 40;
+    public const int field_size = 220;
     public GameObject obj;
     
     public Vector3 sp; //スタート位置の整数座標
@@ -56,6 +58,7 @@ public class AStaralgorithm : MonoBehaviour
                 double hit_int_z = Math.Round(hit_vec.z);
 
                 double dist = Vector3.Distance(origin,hit_vec);
+
                 if(WalltoObjDist>dist) WalltoObjDist = dist;
 //----------------------変更箇所------------------------------
                 if (hit_vec == gp)
@@ -63,6 +66,7 @@ public class AStaralgorithm : MonoBehaviour
                     Debug.Log("Find Goal");
                     return;
                 }
+                Debug.Log(hit_int_z);
                 if (wall[(int)hit_int_x, (int)hit_int_y, (int)hit_int_z] == 0)
                 {
                     wall[(int)hit_int_x, (int)hit_int_y, (int)hit_int_z] = 1;      
@@ -328,7 +332,7 @@ public class AStaralgorithm : MonoBehaviour
     {
         Vector3 p = new Vector3(x,0.3f,z);
         double potential_sum = 0;  
-        potential_sum += Vector3.Distance(p,gp);  //3をかけているのは吸引力を増やしたかったから。エゴ。
+        potential_sum += Vector3.Distance(p,gp);  
         for(int i = 0;i<=field_size;i++)
         {
             for(int j = 0;j<=field_size;j++)
@@ -382,7 +386,7 @@ public class AStaralgorithm : MonoBehaviour
             WalltoObjDist = field_size;
             radar(transform.position);
             // Debug.Log(WalltoObjDist);
-            if(WalltoObjDist<=1.4)
+            if(WalltoObjDist<=10.4)
             {
                 Debug.Log("Warning");
                 Vector3 now = transform.position;
@@ -392,10 +396,10 @@ public class AStaralgorithm : MonoBehaviour
                 Vector3 field = new Vector3(dx,0.5f,dz);
                 field.Normalize();  //正規化:ベクトルの大きさを1にする。やらないと挙動が無茶苦茶になる
                 Debug.Log(field);
-                transform.position += field*3.0f*Time.deltaTime;
+                transform.position += field*10.0f*Time.deltaTime;
                 WalltoObjDist = field_size;
                 radar(transform.position);
-                if(WalltoObjDist>=1.4)
+                if(WalltoObjDist>=10.4)
                 {
                     _shortestWay = RouteFind();
                     count = 0;
