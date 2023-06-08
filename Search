@@ -1,0 +1,31 @@
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+
+public class Search : MonoBehaviour
+{
+    [SerializeField]
+    private SphereCollider searchArea;
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.tag == "Player") //�v���C���[�𔭌�
+        {
+            //�@��l���̕���
+            var playerDirection = (other.transform.position - transform.position).normalized;
+            
+            Debug.Log("Find Player");
+        }
+    }
+
+    private void OnTriggerExit(Collider other) //�v���C���[��������
+    {
+        if (other.tag == "Player")
+        {
+            Debug.Log("cant Find Player");
+        }
+    }
+    
+}
