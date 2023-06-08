@@ -1,0 +1,104 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+using UnityEngine;
+using System.Linq;
+
+public class RamAppear : MonoBehaviour
+{
+    [SerializeField]
+    public GameObject prefab;
+    public int count = 0;
+    public int max = 25;
+    void Start()
+    {
+        InvokeRepeating("Generate", 0, 0.2f);
+    }
+
+    void Generate()
+    {
+        if (count == max) return;
+        float x = Random.Range(1f, 39f);
+        float y = 0.5f;
+        float z = Random.Range(1f, 39f);
+        Vector3 pos = new Vector3(x, y, z);
+        
+        if (OutSphere(pos))
+        {
+            count++;
+            Instantiate(prefab, pos, Quaternion.identity);
+        }
+    }
+
+    void Update()
+    {
+
+    }
+
+    bool IsOutside(Vector3 Goal)
+    {
+        Vector3 Point;
+        Vector3 Start = new Vector3(0, 100, 0); // This is defined to be some arbitrary point far away from the collider.
+         // This is the point we want to determine whether or not is inside or outside the collider.
+        Vector3 Direction = Goal - Start; // This is the direction from start to goal.
+        Direction.Normalize();
+        int Itterations = 0; // If we know how many times the raycast has hit faces on its way to the target and back, we can tell through logic whether or not it is inside.
+        Point = Start;
+
+
+        while (Point != Goal) // Try to reach the point starting from the far off point.  This will pass through faces to reach its objective.
+        {
+            RaycastHit hit;
+            if (Physics.Linecast(Point, Goal, out hit)) // Progressively move the point forward, stopping everytime we see a new plane in the way.
+            {
+                Itterations++;
+                Point = hit.point + (Direction / 100.0f); // Move the Point to hit.point and push it forward just a touch to move it through the skin of the mesh (if you don't push it, it will read that same point indefinately).
+            }
+            else
+            {
+                Point = Goal; // If there is no obstruction to our goal, then we can reach it in one step.
+            }
+        }
+        while (Point != Start) // Try to return to where we came from, this will make sure we see all the back faces too.
+        {
+            RaycastHit hit;
+            if (Physics.Linecast(Point, Start, out hit))
+            {
+                Itterations++;
+                Point = hit.point + (-Direction / 100.0f);
+            }
+            else
+            {
+                Point = Start;
+            }
+        }
+        if (Itterations % 2 == 0)
+        {
+            Debug.Log("Point is Outside");
+            return true;
+        }
+        if (Itterations % 2 == 1)
+        {
+            Debug.Log("Point is Inside");
+            return false;
+        }
+        return true;
+    }
+
+    bool OutSphere(Vector3 center)
+    {
+        Collider[] colliders = Physics.OverlapSphere(center, 0.4f);
+        if ( colliders.Length > 0 )
+        {
+            // �R���C�_�[�̒��ɂ���
+            Debug.Log("Point is Inside");
+            return false;
+        }
+        else
+        {
+            // �R���C�_�[�̊O�ɂ���
+            Debug.Log("Point is Onside");
+            return true;
+        }
+    }
+}
